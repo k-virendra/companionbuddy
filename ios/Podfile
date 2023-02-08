@@ -1,12 +1,14 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+$RNFirebaseAsStaticFramework = true
 
-platform :ios, '10.0'
+platform :ios, '13.0'
 
 target 'MentalHealthReactNativeCLI' do
   config = use_native_modules!
+  use_frameworks!
 
-  use_react_native!(:path => config["reactNativePath"])
+  use_react_native!(:path => config[:reactNativePath])
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
@@ -25,10 +27,19 @@ target 'MentalHealthReactNativeCLI' do
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable these next few lines.
-  use_flipper!
-  post_install do |installer|
-    flipper_post_install(installer)
+#  use_flipper!
+#  post_install do |installer|
+#    flipper_post_install(installer)
+#  end
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if pod.name.eql?('RNScreens') || pod.name.eql?('RNCMaskedView')|| pod.name.eql?('ReactNativeART')|| pod.name.eql?('RNSoundPlayer')
+      def pod.build_type
+        Pod::BuildType.static_library
+      end
+    end
   end
+end
 end
 
 target 'MentalHealthReactNativeCLI-tvOS' do
@@ -37,5 +48,12 @@ target 'MentalHealthReactNativeCLI-tvOS' do
   target 'MentalHealthReactNativeCLI-tvOSTests' do
     inherit! :search_paths
     # Pods for testing
+  end
+end
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = "arm64"
+    end
   end
 end
