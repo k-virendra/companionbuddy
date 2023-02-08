@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,36 +12,50 @@ import {
   ToastAndroid
 } from 'react-native';
 import { colors } from '../constants/theme';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { login } from '../redux/actions/auth';
+import auth from '@react-native-firebase/auth';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import { useNavigation } from '@react-navigation/native';
 
 const Login = props => {
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
   const [state, setState] = useState({
     email: '',
     password: ''
   });
+// If null, no SMS has been sent
+const [confirm, setConfirm] = useState(null);
+const [user, setUser] = useState();
 
-  const handleLogin = () => {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+// Handle user state changes
+function onAuthStateChanged(user) {
+  console.log("USER", user);
+  dispatch({type: REGISTER_SUCCESS, payload: user});
+  setUser(user);
+}
 
-    if (state.email === '' || !re.test(String(state.email).toLowerCase())) {
-      ToastAndroid.show('Email is invalid', ToastAndroid.SHORT);
-      return;
-    }
+useEffect(() => {
+  const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+  return subscriber; // unsubscribe on unmount
+}, []);
+// Handle the button press
+async function signInWithPhoneNumber() {
+  const confirmation = await auth().signInWithPhoneNumber(state.email);
+  console.log("comfirm", confirmation);
+  setConfirm(confirmation);
+}
 
-    if (state.password.length < 6) {
-      ToastAndroid.show(
-        'Password must contain 6 characters',
-        ToastAndroid.SHORT
-      );
-      return;
-    }
-
-    props.login({ ...state });
-
-    //console.log('after-register');
-  };
-
+async function confirmCode() {
+  try {
+    await confirm.confirm(state.password);
+  } catch (error) {
+    Toast.show({type: "error", text1: 'Invalid code'})
+    console.log('Invalid code.');
+  }
+}
+ 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.white }}>
       <View style={styles.container}>
@@ -58,8 +72,9 @@ const Login = props => {
           <Text style={styles.headerText}>Login</Text>
           <TextInput
             style={styles.textInput}
-            placeholder={'Email'}
+            placeholder={'Phone Number with Country Code'}
             value={state.email}
+            editable={!confirm && true}
             onChangeText={text => {
               setState({
                 ...state,
@@ -67,9 +82,10 @@ const Login = props => {
               });
             }}
           />
-          <TextInput
+          {confirm && <TextInput
             style={styles.textInput}
-            placeholder={'Password'}
+            keyboardType='number-pad'
+            placeholder={'OTP'}
             value={state.password}
             onChangeText={text => {
               setState({
@@ -77,14 +93,14 @@ const Login = props => {
                 password: text
               });
             }}
-            secureTextEntry={true}
-          />
-          <TouchableOpacity onPress={() => props.navigation.navigate('SignUp')}>
+            // secureTextEntry={true}
+          />}
+          {/* <TouchableOpacity onPress={() => props.navigation.navigate('SignUp')}>
             <Text style={styles.already}>Don't have an account?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogin}>
+          </TouchableOpacity> */}
+          <TouchableOpacity onPress={confirm ? confirmCode : signInWithPhoneNumber}>
             <View style={styles.submitButton}>
-              <Text style={styles.submitText}>Login</Text>
+              <Text style={styles.submitText}>{confirm ? "Submit OTP ": "Send OTP"}</Text>
             </View>
           </TouchableOpacity>
         </View>

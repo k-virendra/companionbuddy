@@ -170,7 +170,7 @@ const HomeScreen = props => {
               title="Done"
               titleStyle={styles.done}
               onPress={() => {
-                props.updateConcerns(selectedConcerns, props.auth.user._id);
+                props.updateConcerns(selectedConcerns, props?.auth?.user?._id);
                 setModalVisible(false);
               }}></Button>
           </View>

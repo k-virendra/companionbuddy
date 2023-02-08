@@ -12,7 +12,7 @@ const LoginStackNavigation = () => {
         headerShown: false
       }}
     >
-      <Stack.Screen name='SignUp' component={SignupScreen} />
+      {/* <Stack.Screen name='SignUp' component={SignupScreen} /> */}
       <Stack.Screen name='Login' component={LoginScreen} />
     </Stack.Navigator>
   );

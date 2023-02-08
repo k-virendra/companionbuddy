@@ -46,14 +46,14 @@ const TabNavigation = () => {
         activeTintColor: colors.white,
         inactiveTintColor: colors.white2,
         tabStyle: {
-          padding: 8,
+          // padding: 8,
         },
         style: {
           backgroundColor: colors.primary,
           marginTop: 0,
           borderTopWidth: 0,
           elevation: 10,
-          height: 60,
+          height: 80,
         },
         iconStyle: {
           margin: 8,

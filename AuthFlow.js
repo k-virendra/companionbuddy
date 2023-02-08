@@ -12,6 +12,7 @@ const AuthFlow = () => {
   return (
     <NavigationContainer>
       {!auth.isLogin ? <LoginStackNavigation /> : <TabNavigation />}
+      {/* <TabNavigation /> */}
     </NavigationContainer>
   );
 };
